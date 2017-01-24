@@ -4,18 +4,18 @@ Use as a Remote control for your computer, scan infrared remotes and store in a 
 
 ### Features:
 
-High power transmitter with wide IR angle
-USB connection to the host system
-Supported by WinLirc and Lirc
-Plug & Play (Uses CDC-ACM driver)
-Infrared Transmitter @940nm with 10+ meters range
-Infrared Receiver up to 40khz and 10+ meters of receive range
-Open source software & hardware
+- High power transmitter with wide IR angle
+- USB connection to the host system
+- Supported by WinLirc and Lirc
+- Plug & Play (Uses CDC-ACM driver)
+- Infrared Transmitter @940nm with 10+ meters range
+- Infrared Receiver up to 40khz and 10+ meters of receive range
+- Open source software & hardware
 
 ### Supported in:
-Linux
-MAC OSX
-Windows
+- Linux
+- MAC OSX
+- Windows
 
 ### Version
 1.0
