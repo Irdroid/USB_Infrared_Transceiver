@@ -1,4 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
-    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/usb_stack.h</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/SUMP.c</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/HardwareProfile.h</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/configWords.h</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/usb_stack.c</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/IRs.c</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/RCdecoder.c</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/SUMP.h</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/irWidget.h</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/IRs.h</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/cdc.h</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/descriptors.h</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/PICUSB.h</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/cdc.c</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/main.c</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/irWidget.c</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/main.h</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/usb2uart.c</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/globals.h</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/cdc_config.h</file>
+            <file>file:/C:/Users/Hans/MPLABXProjects/USB_Irtoy/usb2uart.h</file>
+        </group>
+    </open-files>
 </project-private>

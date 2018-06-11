@@ -24,6 +24,8 @@
 #include "globals.h"
 #include "configwords.h"	// JTR only included in main.c
 #include "descriptors.h"	// JTR Only included in main.c
+#include "IRr.h"
+#include "IRt.h"
 
 extern unsigned char usb_device_state; // JTR2 corrected type
 extern unsigned char cdc_trf_state;
@@ -45,6 +47,8 @@ static enum _mode {
     IR_DECODER, //IRMAN IR RC decoder
     IR_SUMP, //SUMP logic analyzer
     IR_S, //IR Sampling mode
+	IR_R,
+	IR_T,
     USB_UART,
     IRWIDGET
     //IR_RECORDER //record IR signal to EEPROM, playback
@@ -88,6 +92,7 @@ void main(void) {
             if ((usb_device_state < DEFAULT_STATE)) { // JTR2 no suspendControl available yet || (USBSuspendControl==1) ){
                 LedOff();
             } else if (usb_device_state < CONFIGURED_STATE) {
+			
                 LedOn();
             }else if((ledtrig==1) && (usb_device_state == CONFIGURED_STATE)){
 				LedOff();
@@ -102,7 +107,7 @@ void main(void) {
         //mode = IRWIDGET;
         //irWidgetservice();
 
-        switch (mode) { //periodic service routines
+        switch (mode) { // periodic service routines
             case IR_SUMP:
                 //SUMPlogicCommand();
                 if (irSUMPservice() != 0) SetUpDefaultMainMode();
@@ -110,7 +115,12 @@ void main(void) {
                 break;
             case IR_S:
                 if (irsService() != 0) SetUpDefaultMainMode();
-
+ 				break;
+  			case IR_R:
+                if (irrService() != 0) SetUpDefaultMainMode();
+                break;
+			case IR_T:
+                if (irtService() != 0) SetUpDefaultMainMode();
                 break;
             case USB_UART:
                 if (Usb2UartService() != 0) SetUpDefaultMainMode();
@@ -157,6 +167,16 @@ void main(void) {
                         case 's':
                             mode = IR_S;
                             irsSetup();
+                            break;
+ 						case 'M': //IRIO Recording Mode
+                        case 'm':
+                            mode = IR_R;
+                            irrSetup();
+                            break;
+						case 'N': //IRIO Recording Mode
+                        case 'n':
+                            mode = IR_T;
+                            irtSetup();
                             break;
                         case 'U':
                         case 'u':
@@ -258,7 +278,7 @@ void SelfTest(void) {
     CCPR1L = 0b00101001; //upper 8 bits of duty cycte
     CCP1CON = 0b00011100; //we leave this on for visual inspection (5-4 two LSB of duty, 3-0 set PWM)
 
-    cnt = 40000;
+    cnt = 200000;
     while (cnt--);
 
     if (IRRX_PORT & IRRX_PIN)
@@ -390,7 +410,7 @@ void SetupBoard(void) {
     IRRX_TRIS &= (~0b11101001); //output unused port B pins
     IRRX_TRIS |= IRRX_PIN; //direction to input
     IRRXIF = 0; //Reset the RB Port Change Interrupt Flag bit
-    IRRXIE = 0; //startup in IR_DECODER mode, enable IR RX interrupt
+    IRRXIE = 1; //startup in IR_DECODER mode, enable IR RX interrupt
 #ifdef IRRX_ONINT2 	//make sure unused pin isn't going to interfere on dual connected PCBs
     IRRX_EDGE = 0; //falling edge interrupt on RB2
     TRISB |= 0b10000; //make RB4 input so it doesn't interfere!
@@ -400,10 +420,10 @@ void SetupBoard(void) {
     T0_IP = 1; //timer 0 high priority
     T1_IP = 1; //timer 1 high priority
     T2_IP = 1; //timer 2 high priority
-    T3_IP = 1; //timer 3 high priority
+    T3_IP = 0; //timer 3 high priority
     IRRX_IP = 1; // IR DeMod high priority interrupt, either PORTB change or INT2 depending on hardware.
-    IRRAWINT1_IP = 1;
-    CCP1_IP = 1;
+    IRRAWINT1_IP = 0;
+    CCP1_IP = 0;
     EnableIRTOY_HI_IP();
 
     //INTCONbits.GIEL = 1; //enable peripheral interrupts
@@ -438,6 +458,12 @@ void InterruptHandlerHigh(void) {
             break;
         case IR_S:
             _asm call irsInterruptHandlerHigh, 0 _endasm //see IRIO.c
+            break;
+		case IR_R:
+            _asm call irrInterruptHandlerHigh, 0 _endasm //see IRIO.c
+            break;
+		case IR_T:
+            _asm call irtInterruptHandlerHigh, 0 _endasm //see IRIO.c
             break;
         case IR_SUMP:
             _asm call SUMPInterruptHandlerHigh, 0 _endasm //see SUMP.c

@@ -36,6 +36,7 @@ extern BYTE *OutPtr;
 static unsigned char h, l, tmr0_buf[3]; //JTR3 note swapped tmr0buf H/L bytes Now [0] = low [1] = high [2] = end of data byte
 static unsigned char modFreq[8];
 static unsigned char modFreqCnt;
+static unsigned char h1, h2, l1, l2;
 
 void cleanup(void);
 
@@ -82,7 +83,8 @@ static struct {
     unsigned char TXsamples;
     unsigned char timeout;
     unsigned char TX : 1;
-    unsigned char rxflag : 1;
+    unsigned char rxflag1 : 1;
+    unsigned char rxflag2 : 1;
     unsigned char txflag : 1;
     unsigned char flushflag : 1;
     unsigned char overflow : 1;
@@ -147,7 +149,8 @@ void irsSetup(void) {
     IRFREQ_PIN_SETUP();
 
     //setup for IR RX
-    irS.rxflag = 0;
+    irS.rxflag1 = 0;
+    irS.rxflag2 = 0;
     irS.txflag = 0;
     irS.flushflag = 0;
     irS.timeout = 0;
@@ -236,6 +239,7 @@ typedef struct _smCommand {
 #define IRIO_UART_CLOSE		0x41
 #define IRIO_UART_WRITE		0x42
 #define IRIO_IRW_FREQ           0x43
+#define CDC_DESC 0x22
 //
 
 static unsigned char TxBuffCtr; //this is a total hack, needed for updated getUSBbyte function
@@ -310,7 +314,7 @@ unsigned char irsService(void) {
                                     // IR Tx Timer to timeout.
                                     //check here for 0xff 0xff and return to IDLE state
 
-                                    if (((*(OutPtr) == 0xFF) && (*(OutPtr + 1)) == 0xff)) {
+                                    if (((*(OutPtr) == 0xff) && (*(OutPtr + 1)) == 0xff)) {
 										tmr0_buf[2]=0xff; //flag end of data
                                         irIOstate = I_LAST_PACKET;
                                         i = irS.TXsamples;
@@ -359,6 +363,7 @@ unsigned char irsService(void) {
 									}
 
                                     if (irIOstate == I_LAST_PACKET)
+
                                         break;
                                 }//for
                             } // if ZLP
@@ -385,6 +390,7 @@ unsigned char irsService(void) {
                             cdc_In_buffer[0] = 'C';
 							if(irS.txerror) cdc_In_buffer[0] = 'F';
                             putUnsignedCharArrayUsbUsart(cdc_In_buffer, 1); //send current buffer to USB
+
                         }
                         irS.TXsamples = 1; //will be zeroed at end, super hack yuck!  //JTR3 super yuck!
                         break;
@@ -441,6 +447,13 @@ unsigned char irsService(void) {
                         irS.sendcount = 1;
                         break;
                         // JTR3 End of new commands
+ 					case CDC_DESC:
+						cleanup();
+                        LedOff();
+                        LedOut();
+                        return 1; //need to flag exit!
+						break;
+				
 
                     case IRIO_DESCRIPTOR:
                         WaitInReady();
@@ -529,9 +542,9 @@ unsigned char irsService(void) {
 
                         CCPR1L = (DUTY >> 1); //upper 8 bits of duty cycle, 50% of period by binary division
                         if ((DUTY & 0b1) != 0)//if LSB is set, set bit 1 in CCP1CON
-                            CCP1CON |= 0b00100000; //5-4 two LSB of duty, 3-0 set PWM
+                            CCP1CON |= 0b100000; //5-4 two LSB of duty, 3-0 set PWM
                         else
-                            CCP1CON &= (~0b00100000); //5-4 two LSB of duty, 3-0 set PWM
+                            CCP1CON &= (~0b100000); //5-4 two LSB of duty, 3-0 set PWM
 
                         T2CON = 0b00000101; //enable timer again, 4x prescaler
                         break;
@@ -576,25 +589,35 @@ unsigned char irsService(void) {
                 }
                 irIOstate = I_IDLE; //return to idle state
 
-                irS.TXsamples--;
-                TxBuffCtr++;
+                //irS.TXsamples--; //already done above? fell torugh, not sonsume new bytes
+                //TxBuffCtr++;
                 break;
-        }
+        }//case I process
     }//switch
 
 
     if (irS.overflow == 0) {
         //service the inbound samples here
         //keep in 64 byte buffer then send to USB for max sample rate
-        if (irS.rxflag == 1) { //a RX byte is in the buffer
-            *InPtr = h; //add to USB send buffer
+        if (irS.rxflag1 == 1) { //a RX byte is in the buffer
+            *InPtr = h1; //add to USB send buffer
             irS.RXsamples++;
             InPtr++;
-            *InPtr = l; //add to USB send buffer
+            *InPtr = l1; //add to USB send buffer
 
             irS.RXsamples++;
             InPtr++;
-            irS.rxflag = 0; //reset the flag
+            irS.rxflag1 = 0; //reset the flag
+        }
+        if (irS.rxflag2 == 1) { //a RX byte is in the buffer
+            *InPtr = h2; //add to USB send buffer
+            irS.RXsamples++;
+            InPtr++;
+            *InPtr = l2; //add to USB send buffer
+
+            irS.RXsamples++;
+            InPtr++;
+            irS.rxflag2 = 0; //reset the flag
         }
 
         //if the buffer is full, send it to USB
@@ -637,8 +660,10 @@ unsigned char irsService(void) {
         irS.RXsamples = 0;
         irS.flushflag = 0;
         irS.overflow = 0;
-
+        /* if overflow we should go back to normal mode */
         LedOff();
+        cleanup();
+        return 1;
     }
     return 0; //CONTINUE
 }
@@ -724,8 +749,14 @@ void irsInterruptHandlerHigh(void) {
             TMR1L = 0;
             T1ON = 1; //timer on
 
-            if (irS.rxflag == 0) {//check if data is pending
-                irS.rxflag = 1;
+            if (irS.rxflag1 == 0) {//check if data is pending
+                h1 = h;
+                l1 = l;
+                irS.rxflag1 = 1;
+            } else if (irS.rxflag2 == 0) {
+                     irS.rxflag2 = 1;
+                     h2 = h;
+                     l2 = l;
             } else {//error, overflow
                 irS.overflow = 1;
             }
@@ -801,14 +832,19 @@ void irsInterruptHandlerHigh(void) {
             irS.txflag = 0; //buffer ready for new byte
 
         } else {//receive mode
-
-            if (irS.rxflag == 0) {//check if data is pending
-                //packet terminator, 1.7S with no signal
-                h = 0xff; //add to USB send buffer
-                l = 0xff; //add to USB send buffer
-                irS.rxflag = 1; //only send 0xff oxff if you're not liyin
+            // packet terminator, 1.7S with no signal
+            if (irS.rxflag1 == 0) {//check if data is pending
+                h1 = 0xff; //add to USB send buffer
+                l1 = 0xff; //add to USB send buffer
+                irS.rxflag1 = 1;
                 //set the flush flag to send the packet from the main loop
                 irS.flushflag = 1;
+            } else if (irS.rxflag2 == 0) {
+                     irS.rxflag2 = 1;
+                     h2 = 0xff; //add to USB send buffer
+                     l2 = 0xff; //add to USB send buffer
+                     //set the flush flag to send the packet from the main loop
+                     irS.flushflag = 1;
             } else {//error, overflow
                 irS.overflow = 1;
             }
@@ -823,7 +859,7 @@ void irsInterruptHandlerHigh(void) {
         //this is another timer
         //it tells the main loop to send any pending USB bytes
         // after a few MS
-        //the idea is that the 1.7s delay for the terminaor byte is really long
+        //the idea is that the 1.7s delay for the terminator byte is really long
         //we want to send the accumulated data sooner than that, or response will appear sluggish
         //time1 (adjust as needed) sets teh flush flag and sends any pending data on it's way
         irS.flushflag = 1;

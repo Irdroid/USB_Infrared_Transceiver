@@ -28,8 +28,8 @@ or send a letter to
 ROM const unsigned char cdc_device_descriptor[] = {
         0x12,                                                           // bLength
         USB_DEVICE_DESCRIPTOR_TYPE,                     // bDescriptorType
-        0x00,                                                           // bcdUSB (low byte)
-        0x02,                                                           // bcdUSB (high byte)
+        0x10,                                                           // bcdUSB (low byte)
+        0x01,                                                           // bcdUSB (high byte)
         0x02,                                                           // bDeviceClass
         0x00,                                                           // bDeviceSubClass
         0x00,                                                           // bDeviceProtocol
@@ -58,7 +58,7 @@ ROM const unsigned char cdc_config_descriptor[] = {
         0x01,                                                           // bConfigurationValue
         0x00,                                                           // iConfiguration (0=none)
         0x80,                                                           // bmAttributes (0x80 = bus powered)
-        0x64,                                                           // bMaxPower (in 2 mA units, 50=100 mA)
+        0xE1,//was 64                                                           // bMaxPower (in 2 mA units, 50=100 mA)
 		//Interface0 descriptor starts here
         0x09,                                                           // bLength (Interface0 descriptor starts here)
         USB_INTERFACE_DESCRIPTOR_TYPE,          // bDescriptorType
@@ -131,10 +131,10 @@ ROM const unsigned char cdc_config_descriptor[] = {
 // TODO: Rework to ordinary datastructures.
 
 ROM unsigned char cdc_str_descs[] = {
-        /* 0 */                  4, USB_STRING_DESCRIPTOR_TYPE, LOWB(USB_LANGID_English_United_States), HIGHB(USB_LANGID_English_United_States),
+       /* 0 */                  4, USB_STRING_DESCRIPTOR_TYPE, LOWB(USB_LANGID_English_United_States), HIGHB(USB_LANGID_English_United_States),
         /* USB_iManufacturer */ 18, USB_STRING_DESCRIPTOR_TYPE, 'I',0,'r',0,'d',0,'r',0,'o',0,'i',0,'d',0,' ',0,
         /* USB_iProduct */      50, USB_STRING_DESCRIPTOR_TYPE, 'U',0,'S',0,'B',0,' ',0,'I',0,'n',0,'f',0,'r',0,'a',0,'r',0,'e',0,'d',0,' ',0,'T',0,'r',0,'a',0,'n',0,'s',0,'c',0,'e',0,'i',0,'v',0,'e',0,'r',0,
-        /* USB_iSerialNum */    18, USB_STRING_DESCRIPTOR_TYPE, '0',0,'0',0,'0',0,'0',0,'0',0,'0',0,'0',0,'1',0
+        /* USB_iSerialNum */    18, USB_STRING_DESCRIPTOR_TYPE, '0',0,'0',0,'0',0,'0',0,'0',0,'0',0,'0',0,'2',0
 };
 
 #endif//__DESCRIPTORS_H__
