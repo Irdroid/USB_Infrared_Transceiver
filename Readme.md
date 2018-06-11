@@ -18,7 +18,7 @@ Use as a Remote control for your computer, scan infrared remotes and store in a 
 - Windows
 
 ### Version
-1.0
+2.5 - Added two new modes and separated transmit from receive mode thus allowing better support and stability on Android, while backward compatible with all other systems.
 ### Grab a sample
 
 You can grab a sample board from http://www.irdroid.com/irdroid-usb-ir-transceiver/
