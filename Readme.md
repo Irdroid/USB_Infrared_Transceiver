@@ -16,6 +16,7 @@ Use as a Remote control for your computer, scan infrared remotes and store in a 
 - Linux
 - MAC OSX
 - Windows
+- Android
 
 ### Version
 2.5 - Added two new modes and separated transmit from receive mode thus allowing better support and stability on Android, while backward compatible with all other systems.
